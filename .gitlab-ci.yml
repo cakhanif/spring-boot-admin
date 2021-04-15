@@ -1,0 +1,17 @@
+image: docker:latest
+
+variables:
+  DOCKER_HOST: tcp://docker:2375
+
+stages:
+  - compile-build-push
+
+compile-build-push:
+  stage: compile-build-push
+  image: maven:3-amazoncorretto-11
+  services:
+    - docker:dind
+  script:
+    - mvn install docker:build docker:push -Ddocker.username=$DOCKER_HUB_USER -Ddocker.password=$DOCKER_HUB_PASSWORD
+  only:
+    - master
