@@ -7,15 +7,10 @@ spring:
         enabled: true
         service-labels:
           scrape: true
-  boot:
-    admin:
-      ui:
-        title: Spring Boot Admin
-        brand: Danafix Monitoring Spring Boot
   security:
     user:
-      name: cak
-      password: hanif
+      name: admin
+      password: admin
 
 server:
   port: 8080
