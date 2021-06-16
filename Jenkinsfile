@@ -25,7 +25,7 @@ def gitCommitId
 
 autocancelConsecutiveBuilds()
 
-node ('java-gce-dev') {
+node ('t') {
     stage ('Checkout The Code'){
       checkout scm
    }
