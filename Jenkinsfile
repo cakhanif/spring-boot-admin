@@ -26,7 +26,6 @@ def gitCommitId
 autocancelConsecutiveBuilds()
 
 node ('java-gce-dev') {
-try{
     stage ('Checkout The Code'){
       checkout scm
    }
@@ -73,12 +72,6 @@ try{
     // stage ('Archive Jar'){
     //     sh 'mvn deploy -DskipTests -s ./cicd-template/maven/settings.xml'
     // }
-    
-catch (e){
-    currentBuild.result = "FAILED"
-    failedNotif(teamsWebhookURL, appName, gitCommitId)
-    throw e
-}
 }
 
 
