@@ -54,7 +54,6 @@ node ('t') {
         appFullVersion = getFromPom('version')
         gitCommitId = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
         echo "appName: '${appName}', appFullVersion:'${appFullVersion}', gitCommitId:'${gitCommitId}'"
-        startedNotif(teamsWebhookURL, appName, gitCommitId)
    }
 
     //enable when using datamodel
