@@ -10,6 +10,7 @@ def nexus_deps_repo = "${nexus_base_url}/repository/maven"
 def health_probe_path = '/'
 //docker image prop
 def image_builder = 'cakhanif/openjdk8-centos'
+def k8s_name = "dfx-dev"
 
 def scale_type = "hpa"
 //hpa properties
@@ -17,12 +18,21 @@ def max_replica_count = 1
 //vpa properties
 def vpa_mode = ""
 
+def public_path = "/"
+def public_route = ""
 def cpu_limit = "300m"
 def mem_limit = "384Mi"
 
 def env ="dev"
 def purpose = "apps"
 
+//enable pod distruption budget by enable this var
+def enable_pdb = false
+def countPdb = 1
+
+//enable anti affinity
+def anti_affinity = false
+//backup src code?
 def backup_code = false
 def time
 //use this when ready to tested or production
@@ -123,6 +133,7 @@ node ('java-gce-dev') {
     //must provide application-dev.yml on repository
     stage("Update ConfigMap"){
         sh """
+            gcloud container clusters get-credentials ${k8s_name} --region asia-southeast2
             if [ -f './src/main/resources/application-${env}.yml' ]; then
                 kubectl delete cm $appName-v$appMajorVersion -n apps || true
                 kubectl create cm $appName-v$appMajorVersion --from-file=application.yml=./src/main/resources/application-${env}.yml -n apps || true
@@ -138,7 +149,8 @@ node ('java-gce-dev') {
             if (git_branch == "master"){
                 echo "Accept Deploy to Production?"
                 confirmProduction(teamsWebhookURL, appName, gitCommitId, appFullVersion)
-                input 'Proceed and deploy to Production?' 
+                input 'Proceed and deploy to Production?'
+                currentBuild.result = "CONFIRM"
             }
             //check pdb when enabled
             if (enable_pdb == true && countPdb != null){
@@ -206,17 +218,22 @@ node ('java-gce-dev') {
                     kubectl apply -f cicd-template/k8s/java/ingress.yaml
                 """
             }
+            currentBuild.result = "SUCCESS"
         }
         catch (e){
             currentBuild.result = "REJECTED"
-            rejectedNotif(teamsWebhookURL, appName, gitCommitId, appFullVersion)
         }
     }
 
     stage('Notification'){
+        if (currentBuild.result == "CONFIRM" || currentBuild.result == "SUCCESS") {
             successNotif(teamsWebhookURL, appName, gitCommitId, appFullVersion)
-    }
+        }
+        else {
+            rejectedNotif(teamsWebhookURL, appName, gitCommitId, appFullVersion)
+        }
         //TODO ADD NOTIF PER BRANCH AND STATUS BUILD
+    }
 }
 
 // catch (e){
