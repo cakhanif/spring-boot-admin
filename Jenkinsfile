@@ -40,7 +40,7 @@ autocancelConsecutiveBuilds()
 node ('java-gce-dev') {
     stage ('Checkout The Code'){
       checkout scm
-   }
+    }
 
     stage ('Prepare'){
       withCredentials([[$class: 'UsernamePasswordMultiBinding', 
@@ -76,7 +76,7 @@ node ('java-gce-dev') {
                 rm src-${appName}-${appFullVersion}.tar.gz
             """
         }
-   }
+    }
 
     //enable when using datamodel
     // stage('Build DataModel') {
@@ -215,10 +215,10 @@ node ('java-gce-dev') {
 
     stage('Notification'){
             successNotif(teamsWebhookURL, appName, gitCommitId, appFullVersion)
-        }
-        //TODO ADD NOTIF PER BRANCH AND STATUS BUILD
     }
+        //TODO ADD NOTIF PER BRANCH AND STATUS BUILD
 }
+
 catch (e){
     //sent notification when pipeline failed
     currentBuild.result = "FAILED"
