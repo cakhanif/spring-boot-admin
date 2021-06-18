@@ -1,7 +1,8 @@
 def git_repo = 'https://github.com/cakhanif/spring-boot-admin.git'
 
 def git_branch = 'master'
-def registry = 'asia.gcr.io/danafix-platform'
+def registryx = 'asia.gcr.io/danafix-platform'
+def registry = 'registry.dfx-id.com'
 def nexus_base_url = 'https://nexus.dfx-id.com'
 //use repo snapshot for development mode
 def nexus_deploy_repo = "${nexus_base_url}/repository/maven-snapshots"
@@ -68,9 +69,37 @@ node ('java-gce-dev') {
     }
     //disable on dev and staging env
     //enable when needed for another project
-    // stage ('Archive Jar'){
-    //     sh 'mvn deploy -DskipTests -s ./cicd-template/maven/settings.xml'
-    // }
+    stage ('Archive Jar'){
+        sh 'mvn deploy -DskipTests -s ./cicd-template/maven/settings.xml'
+    }
+    stage ('Build Image'){
+        appMajorVersion = appFullVersion.substring(0, appFullVersion.indexOf('.'))
+        jarFile = sh(returnStdout: true, script: 'find ./target -maxdepth 1 -regextype posix-extended -regex ".+\\.(jar|war)\$" | head -n 1').trim()
+        if(jarFile == null || jarFile == ""){
+            error 'Can not find the generated jar/war file from "./target" directory'
+        }
+        jarFile = jarFile.substring('./target/'.length());
+
+        sh """
+            set -x
+            set -e
+
+            mkdir -p ./target/publish/.s2i
+            cp ./target/$jarFile ./target/publish/
+            echo 'JAVA_APP_JAR=/deployments/${jarFile}' > ./target/publish/.s2i/environment
+        """
+
+        // TODO - make it different stages
+        sh """
+                set -x
+                set -e
+
+                s2i build ./target/publish/ ${image_builder} ${registry}/${git_branch}/${appName}:${appFullVersion}
+                docker tag ${registry}/${git_branch}/${appName}:${appFullVersion} ${registry}/${git_branch}/${appName}:latest
+                docker push ${registry}/${git_branch}/${appName}:${appFullVersion}
+                docker push ${registry}/${git_branch}/${appName}:latest
+        """
+    }
 }
 
 
