@@ -219,13 +219,13 @@ node ('java-gce-dev') {
         //TODO ADD NOTIF PER BRANCH AND STATUS BUILD
 }
 
-catch (e){
-    //sent notification when pipeline failed
-    currentBuild.result = "FAILED"
-    failedNotif(teamsWebhookURL, appName, gitCommitId, appFullVersion)
-    throw e
-}
-}
+// catch (e){
+//     //sent notification when pipeline failed
+//     currentBuild.result = "FAILED"
+//     failedNotif(teamsWebhookURL, appName, gitCommitId, appFullVersion)
+//     throw e
+// }
+// }
 
 def getFromPom(key) {
     sh(returnStdout: true, script: "mvn -s ./cicd-template/maven/settings.xml -q -Dexec.executable=echo -Dexec.args='\${project.${key}}' --non-recursive exec:exec").trim()
