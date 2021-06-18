@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: spring-admin
+  cloud:
+    kubernetes:
+      discovery:
+        enabled: true
+        service-labels:
+          scrape: true
+  boot:
+    admin:
+      ui:
+        title: Spring Boot Admin
+        brand: Danafix Monitoring Spring Boot
+        public-url: https://spring-boot-admin.dfx-id.site
+  security:
+    user:
+      name: superadmin
+      password: dfx123
+
+server:
+  port: 8080
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  server:
+    port: 8081
