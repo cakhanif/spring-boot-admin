@@ -93,7 +93,7 @@ node ('java-gce-dev') {
         sh """
                 set -x
                 set -e
-
+                gcloud auth configure-docker | true
                 s2i build ./target/publish/ ${image_builder} ${registry}/${git_branch}/${appName}:${appFullVersion}
                 docker tag ${registry}/${git_branch}/${appName}:${appFullVersion} ${registry}/${git_branch}/${appName}:latest
                 docker push ${registry}/${git_branch}/${appName}:${appFullVersion}
