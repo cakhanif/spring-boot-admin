@@ -155,9 +155,10 @@ node ('java-gce-dev') {
             //check if branch master need confirm
             if (git_branch == "master"){
                 echo "Accept Deploy to Production?"
+                confirmProduction(teamsWebhookURL, appName, gitCommitId, appFullVersion)
                 input 'Proceed and deploy to Production?'
                 currentBuild.result = "CONFIRM"
-                confirmProduction(teamsWebhookURL, appName, gitCommitId, appFullVersion)
+                
             }
             //check pdb when enabled
             if (enable_pdb == true && countPdb != null){
@@ -233,7 +234,7 @@ node ('java-gce-dev') {
     }
 
     stage('Notification'){
-        if (currentBuild.result == "CONFIRM" || currentBuild.result == "SUCCESS") {
+        if (currentBuild.result == "SUCCESS") {
             successNotif(teamsWebhookURL, appName, gitCommitId, appFullVersion)
         }
         else if (currentBuild.result == "REJECTED") {
@@ -242,6 +243,7 @@ node ('java-gce-dev') {
         else {
             echo "do Nothing"
         }
+        echo $currentBuild.result
         //TODO ADD NOTIF PER BRANCH AND STATUS BUILD
     }
 }
