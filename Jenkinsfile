@@ -143,14 +143,21 @@ node ('java-gce-dev') {
             fi           
         """
     }
+    stage('Deploy'){
+        sshagent(['ssh-master']) {
+            sh """
+                ssh -o StrictHostKeyChecking=no 10.143.0.2 ls -al
+            """
+        }
+    }
     stage ('Deploy to Cluster'){
         try {
             //check if branch master need confirm
             if (git_branch == "master"){
                 echo "Accept Deploy to Production?"
-                confirmProduction(teamsWebhookURL, appName, gitCommitId, appFullVersion)
                 input 'Proceed and deploy to Production?'
                 currentBuild.result = "CONFIRM"
+                confirmProduction(teamsWebhookURL, appName, gitCommitId, appFullVersion)
             }
             //check pdb when enabled
             if (enable_pdb == true && countPdb != null){
@@ -229,8 +236,11 @@ node ('java-gce-dev') {
         if (currentBuild.result == "CONFIRM" || currentBuild.result == "SUCCESS") {
             successNotif(teamsWebhookURL, appName, gitCommitId, appFullVersion)
         }
-        else {
+        else if (currentBuild.result == "REJECTED") {
             rejectedNotif(teamsWebhookURL, appName, gitCommitId, appFullVersion)
+        }
+        else {
+            echo "do Nothing"
         }
         //TODO ADD NOTIF PER BRANCH AND STATUS BUILD
     }
