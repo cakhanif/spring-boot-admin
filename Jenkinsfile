@@ -40,6 +40,7 @@ def tag
 def release 
 //notification prop
 def teamsWebhookURL = 'https://finstarap.webhook.office.com/webhookb2/a0481707-dbdb-4e34-ad7c-0873ea0f89fe@80ff74d0-d1e7-437b-a030-e7144816b548/JenkinsCI/a8990efad793439aa8bcb0bf4c8dcfb8/0d557952-07e0-426b-9977-093fb8a0adfa'
+def status_build = script.currentBuild.result
 
 def appName
 def appFullVersion
@@ -158,7 +159,7 @@ node ('java-gce-dev') {
                 echo "Accept Deploy to Production?"
                 confirmProduction(teamsWebhookURL, appName, gitCommitId, appFullVersion)
                 input 'Proceed and deploy to Production?'
-                currentBuild.result = "CONFIRM"
+                status_build = "CONFIRM"
                 
             }
             //check pdb when enabled
@@ -227,24 +228,24 @@ node ('java-gce-dev') {
                     kubectl apply -f cicd-template/k8s/java/ingress.yaml
                 """
             }
-            currentBuild.result = "SUCCESS"
+            status_build = "SUCCESS"
         }
         catch (e){
-            currentBuild.result = "REJECTED"
+            status_build = "REJECTED"
         }
     }
 
     stage('Notification'){
-        if (currentBuild.result == "SUCCESS") {
+        if (status_build == "SUCCESS") {
             successNotif(teamsWebhookURL, appName, gitCommitId, appFullVersion)
         }
-        else if (currentBuild.result == "REJECTED") {
+        else if (status_build == "REJECTED") {
             rejectedNotif(teamsWebhookURL, appName, gitCommitId, appFullVersion)
         }
         else {
             echo "do Nothing"
         }
-        echo $currentBuild.result
+        echo $status_build
         //TODO ADD NOTIF PER BRANCH AND STATUS BUILD
     }
 }
