@@ -58,6 +58,7 @@ node ('java-gce-dev') {
          usernameVariable: 'nexus_username', passwordVariable: 'nexus_password']]) {
                sh """
                   echo 'Downloading cicd templates...'
+                  ping -c 3 ${nexus_base_url}
                   rm -rf cicd-template
                   curl -k --fail -u ${nexus_username}:${nexus_password} -o cicd-template.tar.gz ${nexus_base_url}/repository/dfx-general/cicd-template-${env}.tar.gz
                   mkdir cicd-template && tar -xzvf ./cicd-template.tar.gz -C "\$(pwd)/cicd-template"
